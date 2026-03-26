@@ -1,37 +1,78 @@
-# SpikeEncodingEva
-Spike Encoding Schemes on FPGA
-1.RESU Instruction
-    RESU supports three types of data sets: MNIST/CIFAR10/IMAGENET
-    RESU supports three types of spike encoding: POISS/ISI/TTFS
-    RESU can be configured by software, It consists of three RGB channels, and each color channel is processed in four parallel sub_channels.
+# Spike Encoding Schemes on FPGA with RISC-V Co-Processor (RESU)
 
-2.The RISC-V Co-Processor Relative RTL Code PATH:
-    RESU/rtl/e203/subsys/e203_subsys_nice_core.v
-    RESU/rtl/e203/subsys/rgb_channel_process.v
-    RESU/rtl/e203/subsys/poiss_spike_encoder.v
-    RESU/rtl/e203/subsys/ttfs_spike_encoder.v
-    RESU/rtl/e203/subsys/isi_spike_encoder.v
-    RESU/rtl/e203/subsys/guiss_differ.v
-    RESU/rtl/e203/subsys/submulshift.v
-    RESU/rtl/e203/subsys/ttfs_isi_encoder_share.v
+## 1. Supported Encoding Schemes
 
-3.C_Project Path: RESU/software/co_processor_spike_encoder
-    main_code: RESU/software/co_processor_spike_encoder/co_processor_spike_encoder/application/main.c
-    custom_instr: RESU/software/co_processor_spike_encoder/co_processor_spike_encoder/application/insn.h
-  If you want to modify the configuration parameters of RESU, please modify the main_code.
+The system implements the following spike encoding schemes:
 
-4.Simulation steps
-   (1)open RESU/rtl/include/test_case_defines.v, select one of the test cases
-   (2)cd RESU/RESU_SIM,you can start simulation by using the following commands:
-      make clean
-      make elab
-      make run
-      make verdi
-   (3)And then,you can see the results of simulation,the hierarchy of RISC-V Co-Processor as follows:
-      tb_top.u_e203_soc_top.u_e203_subsys_top.u_e203_subsys_main.u_e203_cpu_top.u_e203_cpu.u_e203_nice_core
+* Poisson Encoding (POISS)
+* Burst Encoding (ISI)
+* Time-to-First-Spike Encoding (TTFS)
 
-5.If you want to create your own test case, Please follow the steps as follows:
-   (1)modify the C code,and compile the C code into the xxxx.verilog format.
-   (2)copy "xxxx.verilog" to "RESU/tb/test_case"
-   (3)modify "RESU/tb/tb_top.v", please modify the content "$readmemh("xxxxx.verilog", itcm_mem);"
-   (4)follow the simulation steps, run your own test case
+## 2. Hardware Implementation
+
+The RTL implementation of the RISC-V co-processor and encoding modules is located at:
+
+```id="qk1v0v"
+./rtl/e203/subsys/
+```
+RTL files:
+* `e203_subsys_nice_core.v` 
+* `rgb_channel_process.v`
+* `poiss_spike_encoder.v`
+* `ttfs_spike_encoder.v` 
+* `isi_spike_encoder.v`
+* `ttfs_isi_encoder_share.v`
+* `guiss_differ.v`
+* `submulshift.v` 
+
+## 3. Software
+
+The RESU system is configurable via software running on the RISC-V processor.
+
+Project Path
+
+```id="yltmd9"
+./software/co_processor_spike_encoder
+```
+
+ C Files
+
+* `application/main.c`
+* `application/insn.h`
+## 4. Run Simulation 
+
+```bash id="87df54"
+cd ./RESU_SIM
+
+make clean
+make elab
+make run
+make verdi
+```
+
+## 5. Custom Test Case Workflow
+
+To evaluate new workloads:
+
+### Step 1: Generate Memory Image
+
+* Modify the C application
+* Compile into a Verilog memory file:
+
+  ```
+  xxxx.verilog
+  ```
+### Step 2: Copy "xxxx.verilog" to
+
+```id="eqsskp"
+./tb/test_case/
+```
+### Step 3: Update Testbench
+Edit:
+```id="6kwogp"
+./tb/tb_top.v
+```
+```verilog id="7bt0f4"
+$readmemh("xxxxx.verilog", itcm_mem);
+```
+### Step 4: Run Simulation
